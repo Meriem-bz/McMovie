@@ -1,6 +1,8 @@
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
 using McMovie.Models;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,10 +13,20 @@ var connectionString = builder.Configuration.GetConnectionString("McMovieContext
 builder.Services.AddDbContext<McMovieContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// Use English number formatting for form values.
+var culture = CultureInfo.GetCultureInfo("en-US");
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(culture),
+    SupportedCultures = new[] { culture },
+    SupportedUICultures = new[] { culture }
+};
+
+app.UseRequestLocalization(localizationOptions);
 
 // Add sample movie data to the database.
 using (var scope = app.Services.CreateScope())
@@ -23,7 +35,6 @@ using (var scope = app.Services.CreateScope())
     SeedData.Initialize(services);
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
